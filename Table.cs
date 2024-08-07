@@ -55,9 +55,13 @@ public class Table<T1, T2, T3>
             return rows.Contains(row) && columns.Contains(column);
         }
 
-        private bool IndexerIsCorrect()
+        private void ValidateIndexer()
         {
-            return this.indexerType.Equals("Open") || this.indexerType.Equals("Existed");
+            if (!(this.indexerType.Equals("Open")
+                || this.indexerType.Equals("Existed")))
+            {
+                throw new ArgumentException("Invalid indexer");
+            }
         }
 
         private T3 GetValue(T1 row, T2 column)
@@ -81,46 +85,38 @@ public class Table<T1, T2, T3>
         {
             get
             {
-                if (this.IndexerIsCorrect())
-                {
-                    if (this.RowAndColumnExists(row, column))
-                    {
-                        return this.GetValue(row, column);
-                    }
-                    else if (this.indexerType.Equals("Open"))
-                    {
-                        return default;
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Row or column doesn`t exists");
-                    }
-                }
+                ValidateIndexer();
 
-                throw new ArgumentException("Invalid indexer");
-            }
-            set
-            {
-                if (this.IndexerIsCorrect())
+                if (this.RowAndColumnExists(row, column))
                 {
-                    if (this.RowAndColumnExists(row, column))
-                    {
-                        this.AddValue(row, column, value);
-                    }
-                    else if(this.indexerType.Equals("Open"))
-                    {
-                        this.AddValue(row, column, value);
-                        this.columns.Add(column);
-                        this.rows.Add(row);
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Invalid row or column");
-                    }
+                    return this.GetValue(row, column);
+                }
+                else if (this.indexerType.Equals("Open"))
+                {
+                    return default;
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid indexer");
+                    throw new ArgumentException("Row or column doesn`t exists");
+                }
+            }
+            set
+            {
+                ValidateIndexer();
+
+                if (this.RowAndColumnExists(row, column))
+                {
+                    this.AddValue(row, column, value);
+                }
+                else if(this.indexerType.Equals("Open"))
+                {
+                    this.AddValue(row, column, value);
+                    this.columns.Add(column);
+                    this.rows.Add(row);
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid row or column");
                 }
             }
         }
